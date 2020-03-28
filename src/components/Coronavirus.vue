@@ -1,0 +1,84 @@
+<template>
+    <div>
+        <div class="coronavirus-latest" v-if="this.latest !== undefined">
+            <div v-if="this.latest.deathRatio !== undefined" class="coronavirus-deathratio">
+                Death ratio : {{deathRatioToFix}} %
+            </div>
+            <div>Confirmed : {{this.latest.confirmed}}</div>
+            <div>Deaths : {{this.latest.deaths}}</div>
+            <div>Recovered : {{this.latest.recovered}}</div>
+        </div>
+
+        <div class="coronavirus-holder" v-for="(l, index) in this.locations" :key="index">
+            <h1 class="coronavirus-country">{{l.country}}</h1>
+                <div class="coronavirus-latest" v-if="l !== undefined">
+                <div class="coronavirus-deathratio">
+                    Death ratio : {{l.latest.deathRatioFixed}} %
+                </div>
+                <div>Confirmed : {{l.latest.confirmed}}</div>
+                <div>Deaths : {{l.latest.deaths}}</div>
+                <div>Recovered : {{l.latest.recovered}}</div>
+                <!--<div>Death ratio : {{l.latest.deathRatio}}</div>
+                <div>Death ratio fixed : {{l.latest.deathRatioFixed}}</div>-->
+            </div>
+            <!--<LatestComponent :latest="this.location.latest"></LatestComponent>-->
+        </div>
+    </div>
+</template>
+
+<script>
+export default {
+    name: 'Coronavirus',
+    data: function () { // fix error.
+      return {
+        locations: [],
+        latest: [] // fix error.
+      }
+    },
+    created () { // fetch the data when the view is created and the data is already being observed
+        this.locations = [];
+        this.updateData();
+    },
+    methods: {
+        async updateData () {
+            let self = this;
+            await fetch('https://coronavirus-tracker-api.herokuapp.com/v2/locations')
+            .then(res => res.json())
+            .then(data => {
+                self.corodata = data;
+                self.latest = data?.latest ?? [];
+                let locationsOri = data?.locations ?? [];
+                let res = this.getLocationsWithDeathRatio(locationsOri);
+                self.locations = res;
+                console.log('updateData: ', res);
+            });
+        },
+        getLocationsWithDeathRatio(data) {
+            let res = data
+                .map(val => {
+                    let latestToUpdate = val.latest;
+                    val.latest.deathRatio = (latestToUpdate.deaths || 0) / ((latestToUpdate.confirmed || 0) + (latestToUpdate.recovered || 0) + (latestToUpdate.deaths || 0)) * 100;
+                    return val;
+                })
+                .sort((a, b) => { // High ratio first
+                    let r1 = a.latest.deathRatio || 0, r2 = b.latest.deathRatio || 0;
+                    if (r1 < r2)
+                        return -1;
+                    if (r1 > r2)
+                        return 1;
+                    return 0;
+                })
+                .map(val => {
+                    let deathRatio = val.latest.deathRatio;
+                    val.latest.deathRatioFixed = (deathRatio === undefined || typeof deathRatio !== 'number') ? '' : deathRatio.toFixed(2);
+                    return val;
+                });
+            return res;
+        },
+    }
+}
+</script>
+
+<style>
+
+</style>
