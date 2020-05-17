@@ -10,6 +10,10 @@
             <div>Recovered : {{this.latest.recovered}}</div>
         </div>
 
+        <div class="coronavirus-info">
+            The list of countries below is sorted by the ratio (death) / (death + not death). On top, countries with the less death per infected.
+        </div>
+
         <div class="coronavirus-holder" v-for="(l, index) in this.locations" :key="index">
             <h1 class="coronavirus-country">{{l.country}}{{l.province ? ' - ' + l.province : ''}}</h1>
                 <div class="coronavirus-latest" v-if="l !== undefined">
@@ -105,5 +109,10 @@ export default {
 .coronavirus-deathratio {
     font-size: 20px;
     margin-bottom: 7px;
+}
+
+.coronavirus-info {
+    margin-top: 10px;
+    font-size: 20px;
 }
 </style>
