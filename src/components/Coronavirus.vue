@@ -39,10 +39,26 @@ export default {
     },
     created () { // fetch the data when the view is created and the data is already being observed
         this.locations = [];
-        this.updateData();
+        this.fetchRemoteApi();
+        // this.fetchAspnetcoreApi();
     },
     methods: {
-        async updateData () {
+        async fetchAspnetcoreApi() {
+            let self = this;
+            await fetch('https://localhost:5001/api/thisisanawsomenewdotnetcore32api/1')
+            .then(res => res.json())
+            .then(data => {
+                self.corodata = data;
+                self.latest = data?.latest ?? [];
+                this.latest['total'] = (self.latest.confirmed || 0) + (self.latest.recovered || 0) + (self.latest.deaths || 0);
+                let locationsOri = data?.locations ?? [];
+                let res = this.getLocationsWithDeathRatio(locationsOri);
+                self.locations = res;
+                console.log('fetchRemoteApi: ', res);
+            });
+        },
+
+        async fetchRemoteApi () {
             let self = this;
             await fetch('https://coronavirus-tracker-api.herokuapp.com/v2/locations')
             .then(res => res.json())
@@ -53,7 +69,7 @@ export default {
                 let locationsOri = data?.locations ?? [];
                 let res = this.getLocationsWithDeathRatio(locationsOri);
                 self.locations = res;
-                console.log('updateData: ', res);
+                console.log('fetchRemoteApi: ', res);
             });
         },
         getLocationsWithDeathRatio(data) {
