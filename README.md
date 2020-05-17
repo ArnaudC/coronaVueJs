@@ -1,3 +1,6 @@
+# Description
+This a viewJS app used to see informations about covid19.
+
 # coronavirus
 
 ## Project setup
